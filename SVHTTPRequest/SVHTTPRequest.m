@@ -165,12 +165,40 @@ typedef NSUInteger SVHTTPRequestState;
     NSMutableArray *dataParameters = [NSMutableArray arrayWithCapacity:parameterCount];
     NSString *method = self.operationRequest.HTTPMethod;
     
+    __block BOOL hasData = NO;
+    [paramsDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if ([obj isKindOfClass:[NSData class]]) {
+            if(![method isEqualToString:@"POST"] && ![method isEqualToString:@"PUT"]) {
+                NSLog(@"**SVHTTPRequest: You can only send multipart/form-data over a POST and PUT requests.");
+                exit(0);
+            }
+            hasData = YES;
+            *stop = YES;
+        }
+    }];
+    
+    NSString *dataBoundaryString = @"SVHTTPRequestBoundary";
+    if (hasData) {
+        NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", dataBoundaryString];
+        [self.operationRequest addValue:contentType forHTTPHeaderField: @"Content-Type"];
+    }
+    
     [paramsDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         
         if([obj isKindOfClass:[NSString class]]) {
             NSString *cleanParameter = [obj encodedURLParameterString];
-            [stringParameters addObject:[NSString stringWithFormat:@"%@=%@", key, cleanParameter]];
-        } 
+            NSString *parameter = [NSString stringWithFormat:@"%@=%@", key, cleanParameter];
+            [stringParameters addObject:parameter];
+
+            if (hasData) {
+                NSMutableData *data = [NSMutableData data];
+                [data appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", dataBoundaryString] dataUsingEncoding:NSUTF8StringEncoding]];
+                [data appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\n\r\n", key] dataUsingEncoding:NSUTF8StringEncoding]];
+                [data appendData:[obj dataUsingEncoding:NSUTF8StringEncoding]];
+                [data appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", dataBoundaryString] dataUsingEncoding:NSUTF8StringEncoding]];
+                [dataParameters addObject:data];
+            }
+        }
         
         else if([obj isKindOfClass:[NSNumber class]]) {
             [stringParameters addObject:[NSString stringWithFormat:@"%@=%@", key, obj]];
@@ -181,10 +209,6 @@ typedef NSUInteger SVHTTPRequestState;
                 NSLog(@"**SVHTTPRequest: You can only send multipart/form-data over a POST and PUT requests.");
                 exit(0);
             }
-            
-            NSString *dataBoundaryString = @"SVHTTPRequestBoundary";
-            NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", dataBoundaryString];
-            [self.operationRequest addValue:contentType forHTTPHeaderField: @"Content-Type"];
             
             NSMutableData *data = [NSMutableData data];
             [data appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", dataBoundaryString] dataUsingEncoding:NSUTF8StringEncoding]];
