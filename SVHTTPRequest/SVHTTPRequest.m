@@ -409,7 +409,7 @@ typedef NSUInteger SVHTTPRequestState;
         NSError *JSONError = nil;
         if(self.operationData && self.operationData.length > 0) {
             response = [NSData dataWithData:self.operationData];
-            NSDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:response options:0 error:&JSONError];
+            NSDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingAllowFragments error:&JSONError];
             
             if(jsonObject)
                 response = jsonObject;
