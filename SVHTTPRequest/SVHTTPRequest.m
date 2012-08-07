@@ -25,6 +25,8 @@ enum {
     SVHTTPRequestStateFinished
 };
 
+NSString *const SVHTTPRequestStatusErrorDomain = @"SVHTTPRequestStatusErrorDomain";
+
 typedef NSUInteger SVHTTPRequestState;
 
 @interface SVHTTPRequest ()
@@ -407,6 +409,7 @@ typedef NSUInteger SVHTTPRequestState;
     dispatch_group_notify(self.saveDataDispatchGroup, self.saveDataDispatchQueue, ^{
         id response = [NSData dataWithData:self.operationData];
         NSError *error = nil;
+        int statusCode = [operationURLResponse statusCode];
         
         if ([[operationURLResponse MIMEType] hasPrefix:@"image/"]) {
             response = [UIImage imageWithData:self.operationData];
@@ -420,6 +423,12 @@ typedef NSUInteger SVHTTPRequestState;
                 if(jsonObject)
                     response = jsonObject;
             }
+        }
+
+        // Return errors for status codes which aren't 2XX
+        if ((statusCode / 100) != 2) {
+            NSDictionary *errorDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[NSHTTPURLResponse localizedStringForStatusCode:statusCode], NSLocalizedDescriptionKey, nil];
+            error = [[NSError alloc] initWithDomain:SVHTTPRequestStatusErrorDomain code:statusCode userInfo:errorDictionary];
         }
         
         [self callCompletionBlockWithResponse:response error:error];

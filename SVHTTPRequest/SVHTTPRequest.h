@@ -22,6 +22,7 @@ enum {
 
 typedef NSUInteger SVHTTPRequestMethod;
 
+FOUNDATION_EXPORT NSString *const SVHTTPRequestStatusErrorDomain;
 
 @interface SVHTTPRequest : NSOperation
 
