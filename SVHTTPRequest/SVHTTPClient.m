@@ -151,7 +151,7 @@
             progress:(void (^)(float))progressBlock 
           completion:(void (^)(id, NSHTTPURLResponse*, NSError *))completionBlock  {
     
-    NSString *completeURLString = [NSString stringWithFormat:@"%@%@", self.basePath, path];
+    NSString *completeURLString = basePath ? [NSString stringWithFormat:@"%@%@", self.basePath, path] : path;
     SVHTTPRequest *requestOperation = [(id<SVHTTPRequestPrivateMethods>)[SVHTTPRequest alloc] initWithAddress:completeURLString method:method parameters:parameters saveToPath:savePath progress:progressBlock completion:completionBlock];
     requestOperation.sendParametersAsJSON = self.sendParametersAsJSON;
     requestOperation.cachePolicy = self.cachePolicy;
