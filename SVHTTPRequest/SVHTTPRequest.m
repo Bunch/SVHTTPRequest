@@ -273,6 +273,11 @@ typedef NSUInteger SVHTTPRequestState;
         return;
     }
     
+    if(![NSThread isMainThread]) { // NSOperationQueue calls start from a bg thread (through GCD), but NSURLConnection already does that by itself
+        [self performSelectorOnMainThread:@selector(start) withObject:nil waitUntilDone:NO];
+        return;
+    }
+    
     if(self.operationParameters)
         [self addParametersToRequest:self.operationParameters];
     
@@ -298,11 +303,6 @@ typedef NSUInteger SVHTTPRequestState;
         [self.operationConnection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     
     [self.operationConnection start];
-
-    if(![NSThread isMainThread]) { // NSOperationQueue calls start from a bg thread (through GCD), but NSURLConnection already does that by itself
-        [[NSRunLoop currentRunLoop] run];
-        return;
-    }
     
 #if !(defined SVHTTPREQUEST_DISABLE_LOGGING)
     NSLog(@"[%@] %@", self.operationRequest.HTTPMethod, self.operationRequest.URL.absoluteString);
