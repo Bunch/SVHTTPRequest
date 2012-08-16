@@ -25,7 +25,8 @@ enum {
     SVHTTPRequestStateFinished
 };
 
-NSString *const SVHTTPRequestStatusErrorDomain = @"SVHTTPRequestStatusErrorDomain";
+NSString *const SVHTTPRequestStatusErrorDomain = @"SVHTTPRequestStatusError";
+NSString *const SVHTTPRequestCancelErrorDomain = @"SVHTTPRequestCancelError";
 
 typedef NSUInteger SVHTTPRequestState;
 
@@ -320,12 +321,14 @@ typedef NSUInteger SVHTTPRequestState;
     [self didChangeValueForKey:@"isFinished"];
 }
 
-- (void)cancel {
+- (BOOL)cancel {
     if([self isFinished])
-        return;
-    
+        return NO;
+
+    [self finish];
     [super cancel];
-    [self callCompletionBlockWithResponse:nil error:nil];
+    [self callCompletionBlockWithResponse:nil error:[NSError errorWithDomain:SVHTTPRequestCancelErrorDomain code:0 userInfo:nil]];
+    return YES;
 }
 
 - (BOOL)isConcurrent {
@@ -427,7 +430,7 @@ typedef NSUInteger SVHTTPRequestState;
         // Return errors for status codes which aren't 2XX
         if ((statusCode / 100) != 2) {
             NSDictionary *errorDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[NSHTTPURLResponse localizedStringForStatusCode:statusCode], NSLocalizedDescriptionKey, nil];
-            error = [[NSError alloc] initWithDomain:SVHTTPRequestStatusErrorDomain code:statusCode userInfo:errorDictionary];
+            error = [NSError errorWithDomain:SVHTTPRequestStatusErrorDomain code:statusCode userInfo:errorDictionary];
         }
         
         [self callCompletionBlockWithResponse:response error:error];

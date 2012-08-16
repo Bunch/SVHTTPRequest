@@ -23,6 +23,7 @@ enum {
 typedef NSUInteger SVHTTPRequestMethod;
 
 FOUNDATION_EXPORT NSString *const SVHTTPRequestStatusErrorDomain;
+FOUNDATION_EXPORT NSString *const SVHTTPRequestCancelErrorDomain;
 
 @interface SVHTTPRequest : NSOperation
 
@@ -39,6 +40,7 @@ FOUNDATION_EXPORT NSString *const SVHTTPRequestStatusErrorDomain;
                            method:(SVHTTPRequestMethod)method 
                        parameters:(NSDictionary*)parameters 
                        completion:(void (^)(id response, NSHTTPURLResponse *urlResponse, NSError* error))completionBlock;
+- (BOOL)cancel;
 
 @property (nonatomic, strong) NSString *userAgent;
 @property (nonatomic, readwrite) BOOL sendParametersAsJSON;

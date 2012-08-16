@@ -120,7 +120,7 @@
 #pragma mark - Operation Cancelling
 
 - (void)cancelRequestsWithPath:(NSString *)path {
-    [self.operationQueue.operations enumerateObjectsUsingBlock:^(id request, NSUInteger idx, BOOL *stop) {
+    [self.operationQueue.operations enumerateObjectsUsingBlock:^(SVHTTPRequest *request, NSUInteger idx, BOOL *stop) {
         NSString *requestPath = [request valueForKey:@"requestPath"];
         if([requestPath isEqualToString:path])
             [request cancel];
