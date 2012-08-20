@@ -9,7 +9,7 @@
 
 #import "SVHTTPRequest.h"
 
-#define kSVHTTPRequestTimeoutInterval 20
+#define kSVHTTPRequestTimeoutInterval 120
 
 @interface NSData (Base64)
 - (NSString*)base64EncodingWithLineLength:(unsigned int)lineLength;
@@ -370,6 +370,7 @@ typedef NSUInteger SVHTTPRequestState;
                               failingURL.absoluteString, NSURLErrorFailingURLStringErrorKey, nil];
     
     NSError *timeoutError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:userInfo];
+    [self cancel];
     [self connection:nil didFailWithError:timeoutError];
 }
 
